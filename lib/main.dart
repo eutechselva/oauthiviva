@@ -112,17 +112,19 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> ivivaDetails(BuildContext context) async {
     var client = OAuth2Client(
-      authorizeUrl: "http://lucy1.iviva.com:5000/oauth2/auth",
-      tokenUrl: "http://lucy1.iviva.com:5000/oauth2/token",
+      authorizeUrl: "http://lucy1.avles.local/oauth2/auth",
+      tokenUrl: "http://lucy1.avles.local/oauth2/token",
       redirectUri: "com.example.oauthiviva://oauth2redirect",
       customUriScheme: "com.example.oauthiviva",
+      credentialsLocation: CredentialsLocation.BODY,
     );
 
     var tknResp = await client.getTokenWithAuthCodeFlow(
-      clientId: "e165fbcdb685693c004631e1205a178dfb812a68441da24c",
+      clientId: "e52954b1e0a46bad3fef7b24eb0e45cec9e4bc0121189436",
       clientSecret:
-          "3d92e7e4fecb303d20fc642767d9bfc7c59a15538096efdf366fb3b3b2b35bc3c3af8f249d843e3516f4c023f5ef2522",
+          "7f63ed52b9f8d49e239d3c6ff83e2a057579186edbe6fdd9f584664abc07cfcd941d317cb718f3461add004dd2d5d58a",
       scopes: ["user:read"],
+      webAuthOpts: {'preferEphemeral': true},
     );
 
     // var client = OAuth2Client(
@@ -152,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       var response = await httpClient.get(Uri.parse(
               //"https://mobile.v4.iviva.cloud/Lucy/oauth_test/user_details"),
-              "http://lucy1.iviva.com:5000/Lucy/test/user_details"),
+              "http://lucy1.avles.local/Lucy/test/user_details"),
           headers: {"Authorization": "Bearer ${token ?? ""}"});
       log(response.body);
       if (response.statusCode == 200) {
