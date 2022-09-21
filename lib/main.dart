@@ -1,16 +1,25 @@
-import 'dart:developer';
-import 'package:flutter/material.dart';
-import 'package:oauth2_client/github_oauth2_client.dart';
-import 'package:oauth2_client/google_oauth2_client.dart';
-import 'package:oauth2_client/oauth2_client.dart';
-import 'package:http/http.dart' as http;
-import 'package:oauthiviva/oauth2redirect.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:oauth2/oauth2.dart' as oauth2;
+import 'package:oauth2/oauth2.dart';
+import 'package:oauthiviva/user_details.dart';
 import 'app_route.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
+String authorizeUrl = "https://mobile.v4.iviva.cloud/oauth2/auth";
+String tokenUrl = "https://mobile.v4.iviva.cloud/oauth2/token";
+String redirectUri = "com.example.oauthiviva://oauth2redirect";
+String customUriScheme = "com.example.oauthiviva";
+String clientId = "beb89a31b3ad85e77b5f5dfb47282c1d631df3b3cac1e3de";
+String clientSecret =
+    "a04074be51be3935f48ab6023edca976871a3690fb9afe694208f1ff297b90fdd4bc917238c696bc262807bd722adf87";
+Iterable<String> scopes = ["user:read"];
+String logoutUrl = "https://mobile.v4.iviva.cloud/Apps/Auth/userlogout";
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -39,142 +48,89 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Future<void> gitHubDetails(BuildContext context) async {
-    OAuth2Client ghClient = GitHubOAuth2Client(
-        redirectUri: 'com.example.oauthiviva://oauth2redirect',
-        customUriScheme: 'com.example.oauthiviva');
+  Future<void> gitHubDetails(BuildContext context) async {}
 
-    var tknResp = await ghClient.getTokenWithAuthCodeFlow(
-      clientId: "9ffaa88a8e3f2804d3c7",
-      clientSecret: "93c27ae0008efcc1d9d3f1f45e785eb580840344",
-      scopes: ["repo"],
-    );
+  Future<void> googleDetails(BuildContext context) async {}
 
-    String? token = tknResp.accessToken;
+  var authCodeGrant = oauth2.AuthorizationCodeGrant(
+    clientId,
+    Uri.parse(authorizeUrl),
+    Uri.parse(tokenUrl),
+    secret: clientSecret,
+    basicAuth: false,
+  );
 
-    var client = http.Client();
-    try {
-      var response = await client.get(Uri.parse("https://api.github.com/user"),
-          headers: {"Authorization": "token ${token ?? ""}"});
-      log(response.body);
-      if (response.statusCode == 200) {
-        if (!mounted) return;
+  Client? client;
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => OAuthScreen(
-                    details: response.body.toString(),
-                  )),
-        );
-      }
-    } finally {
-      client.close();
-    }
+  Uri? authorizationUrl;
+
+  Uri getAuthUrl() {
+    authorizationUrl ??= authCodeGrant
+        .getAuthorizationUrl(Uri.parse(redirectUri), scopes: scopes);
+    return authorizationUrl!;
   }
 
-  Future<void> googleDetails(BuildContext context) async {
-    OAuth2Client googleClient = GoogleOAuth2Client(
-        redirectUri:
-            'com.example.oauthiviva:/oauth2redirect', //Just one slash, required by Google specs
-        customUriScheme: 'com.example.oauthiviva');
-
-    var tknResp = await googleClient.getTokenWithAuthCodeFlow(
-      clientId:
-          "303836879310-pbtrd5qhg4d9i6i0p1vu7u3g3a4r3d69.apps.googleusercontent.com",
-      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-    );
-
-    String? token = tknResp.accessToken;
-
-    var client = http.Client();
-    try {
-      var response = await client.get(
-        Uri.parse("https://www.googleapis.com/drive/v3/files"),
-        headers: {"Authorization": "Bearer ${token ?? ""}"},
-      );
-      log(response.body);
-      if (response.statusCode == 200) {
-        if (!mounted) return;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => OAuthScreen(
-                    details: response.body.toString(),
-                  )),
-        );
-      }
-    } finally {
-      client.close();
-    }
-  }
-
-  Future<void> ivivaDetails(BuildContext context) async {
-    var client = OAuth2Client(
-      authorizeUrl: "http://lucy1.avles.local/oauth2/auth",
-      tokenUrl: "http://lucy1.avles.local/oauth2/token",
-      redirectUri: "com.example.oauthiviva://oauth2redirect",
-      customUriScheme: "com.example.oauthiviva",
-      credentialsLocation: CredentialsLocation.BODY,
-    );
-
-    var tknResp = await client.getTokenWithAuthCodeFlow(
-      clientId: "e52954b1e0a46bad3fef7b24eb0e45cec9e4bc0121189436",
-      clientSecret:
-          "7f63ed52b9f8d49e239d3c6ff83e2a057579186edbe6fdd9f584664abc07cfcd941d317cb718f3461add004dd2d5d58a",
-      scopes: ["user:read"],
-      webAuthOpts: {'preferEphemeral': true},
-    );
-
-    // var client = OAuth2Client(
-    //   authorizeUrl: "https://mobile.v4.iviva.cloud/oauth2/auth",
-    //   tokenUrl: "https://mobile.v4.iviva.cloud/oauth2/token",
-    //   redirectUri: "com.example.oauthiviva://oauth2redirect",
-    //   customUriScheme: "com.example.oauthiviva",
-    // );
-
-    // var x = "beb89a31b3ad85e77b5f5dfb47282c1d631df3b3cac1e3de";
-    // var y =
-    //     "a04074be51be3935f48ab6023edca976871a3690fb9afe694208f1ff297b90fdd4bc917238c696bc262807bd722adf87";
-
-    // var tknResp = await client.getTokenWithAuthCodeFlow(
-    //   accessTokenParams: {
-    //     "client_id": x,
-    //     "client_secret": y,
-    //   },
-    //   clientId: x,
-    //   clientSecret: y,
-    //   scopes: ["user:read"],
-    // );
-
-    String? token = tknResp.accessToken;
-
-    var httpClient = http.Client();
-    try {
-      var response = await httpClient.get(Uri.parse(
-              //"https://mobile.v4.iviva.cloud/Lucy/oauth_test/user_details"),
-              "http://lucy1.avles.local/Lucy/test/user_details"),
-          headers: {"Authorization": "Bearer ${token ?? ""}"});
-      log(response.body);
-      if (response.statusCode == 200) {
-        if (!mounted) return;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => OAuthScreen(
-                    details: response.body.toString(),
-                  )),
-        );
-      }
-    } finally {
-      httpClient.close();
-    }
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    Future<dynamic> redirect(Uri url) async {
+      final Completer completer = Completer();
+      final flutterWebviewPlugin = FlutterWebviewPlugin();
+
+      await flutterWebviewPlugin
+          .launch(
+        logoutUrl,
+      )
+          .then((value) async {
+        await Future.delayed(const Duration(seconds: 1));
+        flutterWebviewPlugin.reloadUrl(url.toString());
+      });
+      flutterWebviewPlugin.onUrlChanged.listen((String url) async {
+        if (url.contains("/Apps/Auth/userlogin") ||
+            url.contains("/Apps/Auth/userlogout")) {
+        } else {
+          flutterWebviewPlugin.close();
+          flutterWebviewPlugin.dispose();
+          print(url.toString());
+          Uri responseUrl = Uri.parse(url);
+
+          client ??= await authCodeGrant
+              .handleAuthorizationResponse(responseUrl.queryParameters);
+
+          completer.complete(client);
+
+          //flutterWebviewPlugin.dispose();
+
+          print(client);
+
+          return;
+        }
+      });
+
+      return completer.future;
+    }
+
+    Future<void> ivivaDetails(BuildContext context) async {
+      await redirect(getAuthUrl());
+      var response = await client?.get(Uri.parse(
+          "https://mobile.v4.iviva.cloud/Lucy/oauth_test/user_details"));
+      if (response?.statusCode == 200) {
+        if (!mounted) return;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => UserDetailsScreen(
+                    details: response?.body.toString() ?? "",
+                  )),
+        );
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
