@@ -52,24 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> googleDetails(BuildContext context) async {}
 
-  var authCodeGrant = oauth2.AuthorizationCodeGrant(
-    clientId,
-    Uri.parse(authorizeUrl),
-    Uri.parse(tokenUrl),
-    secret: clientSecret,
-    basicAuth: false,
-  );
-
-  Client? client;
-
-  Uri? authorizationUrl;
-
-  Uri getAuthUrl() {
-    authorizationUrl ??= authCodeGrant
-        .getAuthorizationUrl(Uri.parse(redirectUri), scopes: scopes);
-    return authorizationUrl!;
-  }
-
   @override
   void dispose() {
     super.dispose();
@@ -77,7 +59,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Future<dynamic> redirect(Uri url) async {
+    Future<dynamic> redirect() async {
+      var authCodeGrant = oauth2.AuthorizationCodeGrant(
+        clientId,
+        Uri.parse(authorizeUrl),
+        Uri.parse(tokenUrl),
+        secret: clientSecret,
+        basicAuth: false,
+      );
+
+      Uri authorizationUrl = authCodeGrant
+          .getAuthorizationUrl(Uri.parse(redirectUri), scopes: scopes);
+
       final Completer completer = Completer();
       final flutterWebviewPlugin = FlutterWebviewPlugin();
 
@@ -85,27 +78,24 @@ class _MyHomePageState extends State<MyHomePage> {
           .launch(
         logoutUrl,
       )
-          .then((value) async {
+          .whenComplete(() async {
         await Future.delayed(const Duration(seconds: 1));
-        flutterWebviewPlugin.reloadUrl(url.toString());
+        flutterWebviewPlugin.reloadUrl(authorizationUrl.toString());
       });
-      flutterWebviewPlugin.onUrlChanged.listen((String url) async {
-        if (url.contains("/Apps/Auth/userlogin") ||
-            url.contains("/Apps/Auth/userlogout")) {
+      flutterWebviewPlugin.onUrlChanged.listen((String redirectUrl) async {
+        if (redirectUrl.contains("/Apps/Auth/userlogin") ||
+            redirectUrl.contains("/Apps/Auth/userlogout") ||
+            redirectUrl.contains(authorizeUrl)) {
         } else {
           flutterWebviewPlugin.close();
           flutterWebviewPlugin.dispose();
-          print(url.toString());
-          Uri responseUrl = Uri.parse(url);
 
-          client ??= await authCodeGrant
+          Uri responseUrl = Uri.parse(redirectUrl);
+
+          Client client = await authCodeGrant
               .handleAuthorizationResponse(responseUrl.queryParameters);
 
           completer.complete(client);
-
-          //flutterWebviewPlugin.dispose();
-
-          print(client);
 
           return;
         }
@@ -115,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Future<void> ivivaDetails(BuildContext context) async {
-      await redirect(getAuthUrl());
+      var client = await redirect();
       var response = await client?.get(Uri.parse(
           "https://mobile.v4.iviva.cloud/Lucy/oauth_test/user_details"));
       if (response?.statusCode == 200) {
