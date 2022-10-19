@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
         logoutUrl,
       )
           .whenComplete(() async {
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 3));
         flutterWebviewPlugin.reloadUrl(authorizationUrl.toString());
       });
       flutterWebviewPlugin.onUrlChanged.listen((String redirectUrl) async {
@@ -143,6 +143,12 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: () {
                 ivivaDetails(context);
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => const OauthIvivaView(),
+                //   ),
+                // );
               },
               child: const Text("iviva login details"),
             ),
