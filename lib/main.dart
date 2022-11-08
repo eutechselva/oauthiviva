@@ -39,7 +39,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String? apikey;
+  String? _apikey;
   @override
   void dispose() {
     super.dispose();
@@ -47,8 +47,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   getApiKey() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    apikey = prefs.getString('apikey');
+    _apikey = prefs.getString('apikey');
     setState(() {});
+    return;
+  }
+
+  setApiKey(String? apiKey) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (apiKey != null) prefs.setString('apikey', apiKey);
+    await getApiKey();
     return;
   }
 
@@ -65,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
     http.Response res = await client.get(
       Uri.parse(meURL),
       headers: {
-        'Authorization': "APIKEY ${apikey ?? ''}",
+        'Authorization': "APIKEY ${_apikey ?? ''}",
         "Content-Type": "application/x-www-form-urlencoded"
       },
     );
@@ -99,22 +106,22 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Column(
           children: [
-            apikey == null
+            _apikey == null
                 ? ElevatedButton(
                     onPressed: () async {
                       //ivivaDetails(context);
-                      await Navigator.push(
+                      String? apikey = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const OauthIvivaView(),
                         ),
                       );
-                      getApiKey();
+                      setApiKey(apikey);
                     },
                     child: const Text("iviva login details"),
                   )
                 : Container(),
-            apikey != null
+            _apikey != null
                 ? ElevatedButton(
                     onPressed: () {
                       getMyDetails();
@@ -122,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: const Text("get my details"),
                   )
                 : Container(),
-            apikey != null
+            _apikey != null
                 ? ElevatedButton(
                     onPressed: () async {
                       await clearApiKey();
