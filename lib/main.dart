@@ -10,7 +10,7 @@ void main() {
   runApp(const MyApp());
 }
 
-String meURL = "http://lucy1.avles.local/Lucy/test/user_details";
+String meURL = "https://dev-lucy.raseel.city/Lucy/LucyMobileTest/driverMe";
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -72,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
     http.Response res = await client.get(
       Uri.parse(meURL),
       headers: {
-        'Authorization': "APIKEY ${_apikey ?? ''}",
+        'Authorization': _apikey ?? "",
         "Content-Type": "application/x-www-form-urlencoded"
       },
     );
