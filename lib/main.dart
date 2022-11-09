@@ -117,8 +117,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       //   ),
                       // );
                       // setApiKey(apikey);
-                      IvivaAppBrowser ivivaAppBrowser = IvivaAppBrowser();
-                      String? apikey = await ivivaAppBrowser.getApiKey();
+
+                      String? apikey = await IvivaAppBrowser().getApiKey();
                       setApiKey(apikey);
                     },
                     child: const Text("iviva login details"),
