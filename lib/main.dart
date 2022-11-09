@@ -4,6 +4,7 @@ import 'package:oauthiviva/user_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_route.dart';
+import 'iviva_login_inapp_view.dart';
 import 'iviva_web_view.dart';
 
 void main() {
@@ -109,13 +110,15 @@ class _MyHomePageState extends State<MyHomePage> {
             _apikey == null
                 ? ElevatedButton(
                     onPressed: () async {
-                      //ivivaDetails(context);
-                      String? apikey = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const OauthIvivaView(),
-                        ),
-                      );
+                      // String? apikey = await Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => const OauthIvivaView(),
+                      //   ),
+                      // );
+                      // setApiKey(apikey);
+                      IvivaAppBrowser ivivaAppBrowser = IvivaAppBrowser();
+                      String? apikey = await ivivaAppBrowser.getApiKey();
                       setApiKey(apikey);
                     },
                     child: const Text("iviva login details"),
