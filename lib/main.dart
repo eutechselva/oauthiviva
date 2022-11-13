@@ -11,15 +11,18 @@ void main() {
   runApp(const MyApp());
 }
 
-String authorizeUrl = "https://mobile.v4.iviva.cloud/oauth2/auth";
-String tokenUrl = "https://mobile.v4.iviva.cloud/oauth2/token";
+String ivivaURL = 'http://lucy1.avles.local';
+
+String authorizeUrl = "$ivivaURL/oauth2/auth";
+String tokenUrl = "$ivivaURL/oauth2/token";
 String redirectUri = "com.example.oauthiviva://oauth2redirect";
 String customUriScheme = "com.example.oauthiviva";
-String clientId = "beb89a31b3ad85e77b5f5dfb47282c1d631df3b3cac1e3de";
+String clientId = "e52954b1e0a46bad3fef7b24eb0e45cec9e4bc0121189436";
 String clientSecret =
-    "a04074be51be3935f48ab6023edca976871a3690fb9afe694208f1ff297b90fdd4bc917238c696bc262807bd722adf87";
+    "7f63ed52b9f8d49e239d3c6ff83e2a057579186edbe6fdd9f584664abc07cfcd941d317cb718f3461add004dd2d5d58a";
 Iterable<String> scopes = ["user:read"];
-String logoutUrl = "https://mobile.v4.iviva.cloud/Apps/Auth/userlogout";
+String logoutUrl = "$ivivaURL/Apps/Auth/userlogout";
+String meURL = '$ivivaURL/Lucy/test/user_details';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -106,8 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Future<void> ivivaDetails(BuildContext context) async {
       var client = await redirect();
-      var response = await client?.get(Uri.parse(
-          "https://mobile.v4.iviva.cloud/Lucy/oauth_test/user_details"));
+      var response = await client?.get(Uri.parse(meURL));
       if (response?.statusCode == 200) {
         if (!mounted) return;
 
