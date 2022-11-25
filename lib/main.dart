@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   setApiKey(String? apiKey) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     if (apiKey != null) prefs.setString('apikey', apiKey);
     await getApiKey();
     return;
@@ -74,7 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
       Uri.parse(meURL),
       headers: {
         'Authorization': _apikey ?? "",
-        "Content-Type": "application/x-www-form-urlencoded"
       },
     );
     print(res);
@@ -110,16 +110,16 @@ class _MyHomePageState extends State<MyHomePage> {
             _apikey == null
                 ? ElevatedButton(
                     onPressed: () async {
-                      // String? apikey = await Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => const OauthIvivaView(),
-                      //   ),
-                      // );
-                      // setApiKey(apikey);
-
-                      String? apikey = await IvivaAppBrowser().getApiKey();
+                      String? apikey = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const OauthIvivaView(),
+                        ),
+                      );
                       setApiKey(apikey);
+
+                      // String? apikey = await IvivaAppBrowser().getApiKey();
+                      // setApiKey(apikey);
                     },
                     child: const Text("iviva login details"),
                   )

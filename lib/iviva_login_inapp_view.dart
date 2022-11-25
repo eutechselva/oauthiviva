@@ -5,8 +5,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 String ivivaUrl = 'https://dev-lucy.raseel.city';
 
-String ivivaLoginUrl = '$ivivaUrl/Apps/Auth/userlogin';
-String logoutURL = '$ivivaUrl/Apps/Auth/userlogout';
+String ivivaKeyCloackLoginUrl = '$ivivaUrl/IAM/LoginKeycloak/keycloak';
 String ivivaGenerateApiUrl = '$ivivaUrl/Apps/System/generateapikey';
 
 class IvivaAppBrowser extends InAppBrowser {
@@ -40,10 +39,7 @@ class IvivaAppBrowser extends InAppBrowser {
   Future onLoadStop(url) async {
     print("Stopped $url");
     String urlString = url.toString();
-    if (urlString == logoutURL) {
-      webViewController.loadUrl(
-          urlRequest: URLRequest(url: Uri.parse(ivivaLoginUrl)));
-    }
+
     if (urlString.endsWith('/Apps/User/userdashboard') ||
         urlString.endsWith('/Apps/UXP/portal/regular')) {
       hide();
@@ -96,7 +92,8 @@ class IvivaAppBrowser extends InAppBrowser {
 
   Future<String> getApiKey() async {
     await openUrlRequest(
-        urlRequest: URLRequest(url: Uri.parse(logoutURL)), options: options);
+        urlRequest: URLRequest(url: Uri.parse(ivivaKeyCloackLoginUrl)),
+        options: options);
 
     return _completer.future;
   }

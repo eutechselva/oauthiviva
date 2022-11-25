@@ -1,10 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 String ivivaUrl = 'https://dev-lucy.raseel.city';
 
-String ivivaLoginUrl = '$ivivaUrl/Apps/Auth/userlogin';
-String logoutURL = '$ivivaUrl/Apps/Auth/userlogout';
+String ivivaKeyCloackLoginUrl = '$ivivaUrl/IAM/LoginKeycloak/keycloak';
 String ivivaGenerateApiUrl = '$ivivaUrl/Apps/System/generateapikey';
 
 class OauthIvivaView extends StatefulWidget {
@@ -15,13 +16,19 @@ class OauthIvivaView extends StatefulWidget {
 }
 
 class _OauthIvivaViewState extends State<OauthIvivaView> {
+  void initState() {
+    super.initState();
+    // Enable virtual display.
+    if (Platform.isAndroid) WebView.platform = AndroidWebView();
+  }
+
   @override
   Widget build(BuildContext context) {
+    WebViewController? controllerEx;
     back(String? apikey) {
+      apikey = apikey?.replaceAll('"', "");
       Navigator.pop(context, apikey);
     }
-
-    WebViewController? controllerEx;
 
     return Scaffold(
       body: SafeArea(
@@ -29,14 +36,18 @@ class _OauthIvivaViewState extends State<OauthIvivaView> {
           userAgent: 'random',
           javascriptMode: JavascriptMode.unrestricted,
           onWebViewCreated: (WebViewController webViewController) {
+            webViewController.clearCache();
             controllerEx = webViewController;
+            final cookieManager = CookieManager();
+            cookieManager.clearCookies();
           },
           onProgress: (int progress) async {
             String? _url = await controllerEx?.currentUrl();
-            print(_url);
-            print('WebView is loading (progress : $progress%)');
+            print('WebView is loading (progress : $progress%) $_url');
+
             // TODO - if any uxp url , this has to be done , wait until it fully loads
-            if ((_url ?? "").contains("/Apps/UXP/ui/smart-parking") &&
+            if (((_url ?? "").contains("/Apps/UXP/ui/smart-parking") ||
+                    (_url ?? "").endsWith('/Apps/UXP/portal/regular')) &&
                 progress == 100) {
               await controllerEx?.loadUrl(ivivaGenerateApiUrl);
             }
@@ -46,13 +57,8 @@ class _OauthIvivaViewState extends State<OauthIvivaView> {
           },
           onPageFinished: (String url) async {
             print('Page finished loading: $url');
-            if (url.endsWith('/Apps/Auth/userlogout')) {
-              controllerEx?.clearCache();
-              await controllerEx?.loadUrl(ivivaLoginUrl);
-            }
 
-            if (url.endsWith('/Apps/User/userdashboard') ||
-                url.endsWith('/Apps/UXP/portal/regular')) {
+            if (url.endsWith('/Apps/User/userdashboard')) {
               await controllerEx?.loadUrl(ivivaGenerateApiUrl);
             }
             if (url == ivivaGenerateApiUrl) {
@@ -63,7 +69,7 @@ class _OauthIvivaViewState extends State<OauthIvivaView> {
               back(apikey);
             }
           },
-          initialUrl: logoutURL,
+          initialUrl: ivivaKeyCloackLoginUrl,
           navigationDelegate: (NavigationRequest request) async {
             return NavigationDecision.navigate;
           },
